@@ -1,0 +1,66 @@
+===================================================================
+      CARA MENJALANKAN PROYEK KLASIFIKASI BUAH (FRUITS-360)
+===================================================================
+
+Dokumen ini menjelaskan langkah-langkah untuk menjalankan notebook Jupyter (.ipynb) 
+untuk melatih model klasifikasi gambar buah dari dataset Fruits-360 menggunakan
+Google Colaboratory.
+
+-------------------
+KEBUTUHAN (PRASYARAT)
+-------------------
+1. Akun Google: Untuk dapat menggunakan layanan Google Colaboratory (Colab).
+2. Akun Kaggle: Untuk mengunduh dataset melalui API Kaggle.
+
+-------------------
+LANGKAH-LANGKAH
+-------------------
+
+1. BUKA PROYEK DI GOOGLE COLAB
+   - Buka file notebook (.ipynb) dari repositori ini langsung di Google Colab.
+   - Cara termudah adalah dengan mengunjungi https://colab.research.google.com/, 
+     pilih tab "GitHub", lalu masukkan URL repositori ini dan pilih file notebooknya.
+
+2. SIAPKAN KUNCI API KAGGLE
+   - Proyek ini memerlukan file `kaggle.json` untuk mengunduh dataset secara otomatis.
+   - Login ke akun Kaggle Anda.
+   - Buka halaman "Settings" akun Anda melalui tautan ini: https://www.kaggle.com/settings
+   - Di bagian "API", klik tombol "Create New API Token".
+   - Browser Anda akan otomatis mengunduh file bernama `kaggle.json`.
+   - Simpan file ini di lokasi yang mudah Anda temukan di komputer Anda.
+
+3. JALANKAN NOTEBOOK
+   - Kembali ke notebook yang sudah Anda buka di Google Colab.
+   - Jalankan sel pertama (TAHAP 1: INSTALASI DAN SETUP KAGGLE API) dengan menekan ikon "Play" atau `Shift+Enter`.
+   - Setelah sel tersebut dieksekusi, akan muncul tombol "Choose Files" atau "Pilih File". 
+     Klik tombol tersebut dan unggah file `kaggle.json` yang sudah Anda unduh pada langkah 2.
+   - Setelah API key berhasil diunggah, lanjutkan menjalankan sel-sel berikutnya secara berurutan.
+   - Untuk menjalankan semua kode dari awal hingga akhir secara otomatis, Anda bisa klik menu "Runtime" -> "Run all" ("Jalankan semua").
+
+---------------------------
+APA YANG AKAN TERJADI?
+---------------------------
+Saat notebook dijalankan, skrip akan melakukan proses berikut secara otomatis:
+1. Menginstal library Kaggle.
+2. Mengunduh dan mengekstrak dataset Fruits-360.
+3. Mempersiapkan data, termasuk melakukan augmentasi gambar untuk data training.
+4. Membangun arsitektur model Convolutional Neural Network (CNN).
+5. Melatih model. Proses ini mungkin memakan waktu cukup lama (15-30 menit), tergantung pada GPU yang dialokasikan oleh Colab.
+6. Menampilkan grafik akurasi dan loss selama proses training.
+7. Mengevaluasi performa model dan menampilkan laporan klasifikasi serta confusion matrix.
+8. Menyimpan model dengan performa terbaik dengan nama `fruits_cnn_best.h5` di lingkungan Colab.
+
+---------------------------
+HASIL YANG DIHARAPKAN
+---------------------------
+- Output di setiap sel akan menunjukkan progres, mulai dari download data hingga akhir training.
+- Grafik performa model (accuracy & loss) akan ditampilkan setelah training selesai.
+- Akurasi akhir pada data validasi akan dicetak di bagian evaluasi.
+- Contoh prediksi pada satu gambar buah akan ditampilkan di bagian akhir.
+
+-------------------
+CATATAN PENTING
+-------------------
+- Untuk mempercepat proses training, pastikan Anda menggunakan hardware accelerator (GPU) di Colab. 
+  Caranya: klik menu "Runtime" -> "Change runtime type" -> pilih "GPU" pada dropdown "Hardware accelerator".
+- Sesi Colab bersifat sementara. Semua file yang diunduh (dataset) dan model yang disimpan (`fruits_cnn_best.h5`) akan hilang jika sesi ditutup atau dibiarkan tidak aktif terlalu lama. Jika Anda ingin menyimpannya secara permanen, unduh file tersebut ke komputer lokal Anda.
