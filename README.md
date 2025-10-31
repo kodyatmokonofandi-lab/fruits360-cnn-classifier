@@ -1,5 +1,3 @@
-Tentu, ini adalah contoh dokumentasi untuk proyek klasifikasi buah-buahan berdasarkan format yang Anda berikan.
-
 🍎 Fruits-360 Classifier 🥝
 Aplikasi Machine Learning untuk mengklasifikasi 131 jenis buah-buahan menggunakan Deep Learning (Convolutional Neural Network - CNN).
 
