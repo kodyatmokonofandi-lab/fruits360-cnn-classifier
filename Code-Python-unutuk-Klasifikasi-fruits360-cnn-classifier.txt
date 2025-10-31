@@ -1,0 +1,327 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# TAHAP 1: INSTALASI DAN SETUP KAGGLE API
+
+# In[1]:
+
+
+print("🚀 Tahap 1: Menyiapkan Kaggle API...")
+get_ipython().system('pip install -q kaggle')
+
+from google.colab import files
+import os
+
+# Cek jika file kaggle.json sudah ada
+if not os.path.exists("/root/.kaggle/kaggle.json"):
+    print("📁 Silakan upload file kaggle.json Anda.")
+    # (Dapatkan dari https://www.kaggle.com/settings > Create New API Token)
+    files.upload()
+
+    get_ipython().system('mkdir -p ~/.kaggle')
+    get_ipython().system('cp kaggle.json ~/.kaggle/')
+    get_ipython().system('chmod 600 ~/.kaggle/kaggle.json')
+    print("✅ API Key Kaggle berhasil disiapkan.")
+else:
+    print("✅ API Key Kaggle sudah ada.")
+
+
+# TAHAP 2: DOWNLOAD DAN EKSTRAK DATASET FRUITS-360
+
+# In[2]:
+
+
+print("\n🚀 Tahap 2: Mendownload dan mengekstrak dataset...")
+DATASET_DIR = "/content/fruits-360"
+
+if not os.path.exists(DATASET_DIR) or not os.listdir(DATASET_DIR):
+    # Menggunakan || untuk mencoba alternatif jika nama dataset pertama gagal
+    get_ipython().system('kaggle datasets download -d moltean/fruits -p /content || kaggle datasets download -d moltean/fruits-360 -p /content')
+    get_ipython().system('mkdir -p {DATASET_DIR}')
+    get_ipython().system('unzip -q /content/*.zip -d {DATASET_DIR}')
+    # Membersihkan file zip setelah diekstrak
+    get_ipython().system('rm /content/*.zip')
+    print("✅ Dataset berhasil diunduh dan diekstrak.")
+else:
+    print("✅ Dataset sudah tersedia.")
+
+# Tampilkan contoh struktur direktori
+print("\nStruktur direktori:")
+get_ipython().system('ls -R {DATASET_DIR} | head -n 20')
+
+
+# TAHAP 3: PERSIAPAN DATA (DATA PREPARATION)
+
+# In[4]:
+
+
+print("\n🚀 Tahap 3: Menyiapkan generator data...")
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import os
+
+# --- Direktori dan Konfigurasi ---
+# Update paths based on the extraction output
+DATASET_BASE_DIR = os.path.join(DATASET_DIR, 'fruits-360_100x100', 'fruits-360')
+TRAIN_DIR = os.path.join(DATASET_BASE_DIR, 'Training')
+TEST_DIR = os.path.join(DATASET_BASE_DIR, 'Test')
+
+IMG_SIZE = (100, 100)
+BATCH_SIZE = 64
+SEED = 42
+
+# --- Augmentasi Data untuk Training ---
+train_datagen = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=30,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    brightness_range=(0.8, 1.2),
+    fill_mode='nearest'
+)
+
+# --- Normalisasi Data untuk Validasi/Test (tanpa augmentasi) ---
+val_datagen = ImageDataGenerator(rescale=1./255)
+
+# --- Membuat Data Generator ---
+train_generator = train_datagen.flow_from_directory(
+    TRAIN_DIR,
+    target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    seed=SEED
+)
+
+val_generator = val_datagen.flow_from_directory(
+    TEST_DIR,
+    target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    seed=SEED,
+    shuffle=False # Penting untuk evaluasi dan confusion matrix
+)
+
+num_classes = train_generator.num_classes
+print(f"✅ Generator data siap. Ditemukan {num_classes} kelas buah.")
+
+
+# TAHAP 4: MEMBANGUN ARSITEKTUR CNN
+
+# In[5]:
+
+
+print("\n🚀 Tahap 4: Membangun model CNN...")
+from tensorflow.keras import layers, models
+
+def build_cnn(input_shape=(100, 100, 3), n_classes=num_classes):
+    model = models.Sequential([
+        layers.Input(shape=input_shape),
+
+        layers.Conv2D(32, (3, 3), activation='relu', padding='same'),
+        layers.BatchNormalization(),
+        layers.Conv2D(32, (3, 3), activation='relu', padding='same'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Dropout(0.25),
+
+        layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
+        layers.BatchNormalization(),
+        layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Dropout(0.3),
+
+        layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
+        layers.BatchNormalization(),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Dropout(0.4),
+
+        layers.Flatten(),
+        layers.Dense(256, activation='relu'),
+        layers.BatchNormalization(),
+        layers.Dropout(0.5),
+        layers.Dense(n_classes, activation='softmax')
+    ])
+    return model
+
+model = build_cnn()
+print("✅ Model CNN berhasil dibuat.")
+model.summary()
+
+
+# TAHAP 5: KOMPILASI DAN PERSIAPAN TRAINING
+
+# In[6]:
+
+
+print("\n🚀 Tahap 5: Mengompilasi model dan menyiapkan callbacks...")
+from tensorflow.keras import optimizers, callbacks
+
+model.compile(
+    optimizer=optimizers.Adam(learning_rate=1e-4),
+    loss='categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+# --- Callbacks ---
+# 1. Simpan model terbaik
+model_checkpoint = callbacks.ModelCheckpoint(
+    filepath='fruits_cnn_best.h5',
+    save_best_only=True,
+    monitor='val_accuracy',
+    mode='max',
+    verbose=1
+)
+
+# 2. Hentikan training jika tidak ada peningkatan
+early_stopping = callbacks.EarlyStopping(
+    monitor='val_loss',
+    patience=8,
+    restore_best_weights=True,
+    verbose=1
+)
+
+# 3. Kurangi learning rate jika stagnan
+reduce_lr = callbacks.ReduceLROnPlateau(
+    monitor='val_loss',
+    factor=0.2,
+    patience=3,
+    min_lr=1e-6,
+    verbose=1
+)
+
+print("✅ Model dikompilasi dan callbacks siap.")
+
+
+# TAHAP 6: MELATIH MODEL (TRAINING)
+
+# In[ ]:
+
+
+print("\n🚀 Tahap 6: Memulai proses training model...")
+EPOCHS = 30
+
+history = model.fit(
+    train_generator,
+    epochs=EPOCHS,
+    validation_data=val_generator,
+    callbacks=[model_checkpoint, early_stopping, reduce_lr]
+)
+print("✅ Training selesai.")
+
+
+# TAHAP 7: EVALUASI DAN VISUALISASI PERFORMA
+
+# In[ ]:
+
+
+print("\n🚀 Tahap 7: Mengevaluasi dan memvisualisasikan hasil training...")
+import matplotlib.pyplot as plt
+
+# --- Evaluasi pada data test ---
+loss, acc = model.evaluate(val_generator)
+print(f"\nHasil Evaluasi Akhir: Loss = {loss:.4f}, Accuracy = {acc:.4f}")
+
+# --- Visualisasi Akurasi dan Loss ---
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs_range = range(len(acc))
+
+plt.figure(figsize=(16, 6))
+
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+
+plt.show()
+
+
+# TAHAP 8: ANALISIS KESALAHAN (CONFUSION MATRIX)
+
+# In[ ]:
+
+
+print("\n🚀 Tahap 8: Membuat confusion matrix dan laporan klasifikasi...")
+from sklearn.metrics import classification_report, confusion_matrix
+import numpy as np
+import seaborn as sns
+
+# Dapatkan prediksi untuk seluruh data validasi
+# Penting untuk mereset generator sebelum prediksi
+val_generator.reset()
+Y_pred = model.predict(val_generator, steps=np.ceil(val_generator.samples / val_generator.batch_size))
+y_pred = np.argmax(Y_pred, axis=1)
+y_true = val_generator.classes
+class_names = list(val_generator.class_indices.keys())
+
+# --- Laporan Klasifikasi ---
+print("\nLaporan Klasifikasi:\n")
+print(classification_report(y_true, y_pred, target_names=class_names))
+
+# --- Visualisasi Confusion Matrix ---
+# Karena ada 131 kelas, matriks akan sangat besar. Kita visualisasikan sebagian.
+# Jika Anda ingin melihat matriks penuh, hapus batasan `[:20]`
+cm = confusion_matrix(y_true, y_pred)
+plt.figure(figsize=(15, 15))
+sns.heatmap(cm[:20, :20], annot=True, fmt='d', cmap='Blues',
+            xticklabels=class_names[:20], yticklabels=class_names[:20])
+plt.title('Sebagian Confusion Matrix (20 kelas pertama)')
+plt.ylabel('Kelas Aktual')
+plt.xlabel('Kelas Prediksi')
+plt.show()
+
+
+# TAHAP 9: UJI PREDIKSI SATU GAMBAR & INFORMASI DATASET
+
+# In[ ]:
+
+
+print("\n🚀 Tahap 9: Menguji prediksi pada satu gambar...")
+from tensorflow.keras.preprocessing import image
+
+# Ambil contoh gambar dari dataset test
+img_path = os.path.join(TEST_DIR, 'Apple Braeburn/0_100.jpg')
+
+try:
+    img = image.load_img(img_path, target_size=IMG_SIZE)
+    x = image.img_to_array(img) / 255.0
+    x = np.expand_dims(x, axis=0)
+
+    predictions = model.predict(x)[0]
+    predicted_class_index = np.argmax(predictions)
+    predicted_class_name = class_names[predicted_class_index]
+    confidence = np.max(predictions)
+
+    plt.imshow(img)
+    plt.title(f"Prediksi: {predicted_class_name}\nKeyakinan: {confidence:.2%}")
+    plt.axis('off')
+    plt.show()
+
+except FileNotFoundError:
+    print(f"File contoh tidak ditemukan di: {img_path}")
+
+# --- Cek jumlah total gambar ---
+train_count = sum([len(files) for r, d, files in os.walk(TRAIN_DIR)])
+test_count = sum([len(files) for r, d, files in os.walk(TEST_DIR)])
+
+print(f"\n--- Informasi Dataset ---")
+print(f"📊 Jumlah gambar training  : {train_count}")
+print(f"📊 Jumlah gambar testing   : {test_count}")
+print(f"📦 Total gambar            : {train_count + test_count}")
+print(f"📚 Jumlah kelas            : {num_classes}")
+
