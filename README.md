@@ -1,167 +1,149 @@
-🍎 Fruits-360 Classifier 🥝
-Aplikasi Machine Learning untuk mengklasifikasi 131 jenis buah-buahan menggunakan Deep Learning (Convolutional Neural Network - CNN).
+Fruits-360 Classifier
 
-🎯 Fitur Utama
-🤖 Model CNN Klasik - Arsitektur CNN yang dibangun dari awal dengan TensorFlow/Keras. 🎨 Modern UI - Interface web interaktif yang dibuat dengan Gradio. 📊 131 Kategori - Mampu mengenali berbagai jenis buah, mulai dari Apel hingga Tomat Ceri. 🚀 Mudah Digunakan - Cukup upload gambar buah dan dapatkan prediksi secara instan. 📈 Sangat Akurat - Akurasi mencapai 97-99% berkat dataset yang bersih dan terstruktur.
+Deskripsi Umum
+Aplikasi Machine Learning untuk mengklasifikasi 131 jenis buah menggunakan metode Deep Learning berbasis Convolutional Neural Network (CNN).
 
-📦 Kategori yang Diklasifikasi
-Model ini dilatih untuk mengenali 131 kategori buah yang berbeda, di antaranya:
+Fitur Utama
 
-Apple (beberapa varian: Braeburn, Golden, Granny Smith, dll.)
+Arsitektur CNN dikembangkan dari awal menggunakan TensorFlow/Keras.
 
+Antarmuka web interaktif berbasis Gradio yang mudah digunakan.
+
+Klasifikasi hingga 131 jenis buah.
+
+Penggunaan sederhana: unggah gambar untuk memperoleh hasil prediksi.
+
+Akurasi tinggi (97–99%).
+
+Kategori yang Didukung
+Model dilatih untuk mengenali berbagai jenis buah, antara lain:
+Apple (Braeburn, Golden, Granny Smith, dll.)
 Banana
-
 Orange
-
 Strawberry
-
 Mango
-
 Pineapple
+Grape (berbagai varian)
+Dan lebih dari 120 jenis buah lainnya.
 
-Grape (beberapa varian)
+Panduan Menjalankan Proyek
 
-... dan 120+ jenis buah lainnya!
-
-🚀 Cara Menjalankan Proyek
-⭐ CARA TERMUDAH: Gunakan UI Modern
-
-Langsung jalankan aplikasi web interaktif dengan satu perintah:
-
-Bash
-
+Menggunakan Antarmuka Web (Direkomendasikan)
+Jalankan perintah:
 python app.py
-Browser akan otomatis terbuka di alamat http://127.0.0.1:7860.
+Aplikasi akan terbuka otomatis di browser pada alamat:
+http://127.0.0.1:7860
 
 Fitur UI:
 
-Upload gambar dengan drag & drop atau klik.
+Unggah gambar dengan drag & drop atau klik.
 
-Prediksi kategori buah ditampilkan secara otomatis.
+Prediksi kategori buah muncul otomatis.
 
-Lihat probabilitas untuk 5 kategori teratas.
+Menampilkan probabilitas lima kategori teratas.
 
-Interface yang bersih dan responsif.
+Tampilan bersih dan responsif.
 
-📖 Lihat JALANKAN_UI.md untuk panduan lengkap.
+Panduan lengkap: JALANKAN_UI.md
 
-📊 Langkah Alternatif (Command Line)
+Menjalankan Melalui Command Line
 
-Langkah 1: Install Dependencies
-
-Bash
-
+a. Instalasi Dependensi
 pip install -r requirements.txt
-Pastikan Anda sudah mengunduh dan mengekstrak dataset Fruits-360 dari Kaggle.
+Pastikan dataset Fruits-360 telah diunduh dan diekstraksi dari Kaggle.
 
-Langkah 2: Melatih Model
-
-Jalankan skrip untuk melatih model CNN dari awal.
-
-Bash
-
+b. Melatih Model
 python train_model.py
-Output yang dihasilkan:
+Output:
 
-fruits_classifier_model.h5 - File model Keras yang sudah dilatih.
+fruits_classifier_model.h5 (model terlatih)
 
-training_history.png - Grafik akurasi dan loss selama pelatihan.
+training_history.png (grafik akurasi dan loss)
+Waktu pelatihan: 15–30 menit (CPU) atau 5–10 menit (GPU).
 
-Waktu pelatihan: ~15-30 menit di CPU / 5-10 menit dengan GPU.
-
-Langkah 3: Uji Prediksi via Command Line
-
-Gunakan model yang sudah dilatih untuk memprediksi gambar baru.
-
-Bash
-
+c. Prediksi Gambar Baru
 python predict.py --image "path/to/your/image.jpg"
-Atau gunakan fungsi prediksi secara manual di dalam skrip Python:
 
-Python
-
+Atau gunakan kode Python berikut:
 from predict import predict_fruit, load_model_and_class_names
-
 model, class_names = load_model_and_class_names()
-
-# Prediksi satu gambar
-predicted_class, confidence = predict_fruit(
-    'sample_images/test_apple.jpg',
-    model,
-    class_names
-)
+predicted_class, confidence = predict_fruit('sample_images/test_apple.jpg', model, class_names)
 print(f"Prediksi: {predicted_class}, Keyakinan: {confidence:.2f}%")
-📁 Struktur File
+
+Struktur Direktori
+
 FruitsClassifier/
-├── fruits-360/          # Folder dataset (Training & Test)
-├── sample_images/       # Contoh gambar untuk prediksi
-├── requirements.txt     # Dependencies Python
+├── fruits-360/ (Dataset Training & Test)
+├── sample_images/ (Contoh gambar uji)
+├── requirements.txt (Dependensi Python)
 │
-├── app.py               # 🚀 UI Modern dengan Gradio
-├── train_model.py       # Skrip untuk melatih model CNN
-├── predict.py           # Skrip untuk melakukan prediksi
+├── app.py (Antarmuka Web)
+├── train_model.py (Pelatihan model CNN)
+├── predict.py (Prediksi gambar)
 │
-├── README.md            # Dokumentasi ini
-├── JALANKAN_UI.md       # Panduan lengkap UI
-└── outputs/             # Hasil dari eksekusi skrip
-    ├── fruits_classifier_model.h5
-    └── training_history.png
-🎯 Hasil yang Diharapkan
-Akurasi Training: ~99%
+├── README.md (Dokumentasi utama)
+├── JALANKAN_UI.md (Panduan UI lengkap)
+└── outputs/ (Hasil pelatihan dan prediksi)
+├── fruits_classifier_model.h5
+└── training_history.png
 
-Akurasi Validation: ~98%
+Hasil Pelatihan
+Akurasi Training: ±99%
+Akurasi Validation: ±98%
+Ukuran Model: ±15 MB
 
-Model Size: ~15MB (CNN Sederhana)
+Catatan Penting
 
-📝 Catatan Penting
-Pastikan folder dataset fruits-360/ berada di direktori utama proyek.
+Pastikan folder fruits-360/ berada di direktori utama proyek.
 
-Struktur dataset harus berisi folder Training dan Test, yang masing-masing berisi subfolder per kategori buah.
+Struktur dataset harus memiliki folder Training/ dan Test/.
 
-Model menggunakan ukuran input gambar 100x100 piksel.
+Ukuran input gambar: 100x100 piksel.
 
-Data augmentation tidak digunakan secara default karena dataset sudah cukup bervariasi dalam hal rotasi.
+Data augmentation tidak digunakan secara default karena dataset sudah cukup bervariasi.
 
-🔧 Troubleshooting
-Error: "No module named 'tensorflow'"
+Pemecahan Masalah (Troubleshooting)
+Error: No module named 'tensorflow'
+Solusi: pip install tensorflow
 
-Bash
+Error: Directory not found saat training
+Solusi: Pastikan path dataset pada train_model.py sudah benar.
 
-pip install tensorflow
-Error: "Directory not found" saat training Pastikan path ke folder fruits-360/Training dan fruits-360/Test di dalam train_model.py sudah benar.
+RAM tidak cukup (Out of Memory)
+Solusi: Kurangi batch_size dari 32 menjadi 16 atau 8.
 
-RAM tidak cukup (Out of Memory) Kurangi batch_size di train_model.py dari 32 menjadi 16 atau 8.
+Contoh Hasil Prediksi
+Gambar: sample_images/test_apple.jpg
+Prediksi: Apple Braeburn
+Keyakinan: 99.87%
 
-📊 Contoh Output
-📸 Gambar: sample_images/test_apple.jpg 🎯 Prediksi: Apple Braeburn 📊 Keyakinan: 99.87%
+Probabilitas Teratas:
 
-Probabilitas Top 5:
+Apple Braeburn - 99.87%
 
-Apple Braeburn: 99.87%
+Apple Crimson Snow - 0.09%
 
-Apple Crimson Snow: 0.09%
+Apple Red 1 - 0.02%
 
-Apple Red 1: 0.02%
+Pomegranate - 0.01%
 
-Pomegranate: 0.01%
+Tomato - 0.01%
 
-Tomato: 0.01%
+Kontribusi
+Kontribusi sangat terbuka. Silakan ajukan pull request atau issue untuk saran dan perbaikan.
 
-🤝 Contributing
-Kontribusi sangat diterima! Silakan buat pull request atau open issue untuk saran dan perbaikan.
-
-📄 License
+Lisensi
 Proyek ini menggunakan MIT License.
 
-👨‍💻 Author
+Informasi Tambahan
 Proyek ini dibuat untuk tujuan edukasi dalam bidang Computer Vision menggunakan CNN.
 
-📚 Referensi
-Dataset: Fruits 360 on Kaggle
+Referensi:
 
-Framework: TensorFlow/Keras
+Dataset: Fruits-360 (Kaggle)
+
+Framework: TensorFlow / Keras
 
 UI Framework: Gradio
 
-⭐ Star History
-Jika proyek ini membantu Anda belajar, jangan lupa berikan ⭐ di repository GitHub!
+Jika proyek ini bermanfaat, silakan beri star pada repository GitHub sebagai bentuk dukungan.
